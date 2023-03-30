@@ -1,0 +1,63 @@
+--- 
+apiVersion: v1
+data: 
+  appsettings.Production-prod.json: |-
+      {
+        "Logging": {
+          "LogLevel": {
+            "Default": "Information",
+            "Microsoft.AspNetCore": "Warning"
+          }
+        },
+        "ClearDbOnServerStart": false,
+        "Serilog": {
+          "Using": [],
+          "MinimumLevel": {
+            "Default": "Information",
+            "Override": {
+              "Microsoft": "Warning",
+              "System": "Warning"
+            }
+          },
+          "Enrich": [ "FromLogContext", "WithMachineName", "WithProcessId", "WithThreadId" ], //3 packages required
+          "WriteTo": [
+            {
+              "Name": "Console"
+            },
+            {
+              "Name": "Http",
+              "Args": {
+                "requestUri": "https://logapi.prod.quicktools.cloud/api/v1/LogEvents/log-events",
+                "httpClient": "QuickTools.Assets.Api.SerilogHttpClient.SeriLogHttpClient, QuickTools.Assets.Api"
+              }
+            }
+          ]
+        },
+        "SerilogXAPIKEY": "<read_from_key_vault>",
+        "KeyVault": {
+          "Enabled": "true",
+          "Name": "kv-sc-qt",
+          "ClientId": "42e0554b-4515-4a0b-b5f5-0ed419cf472e",
+          "TenantId": "a07ebae6-43b2-4e80-a99e-7801411aa9ae"
+        },
+        "MyConfig": {
+          "HostsAddresses": {
+            "IdentityServer": "https://idp.prod.quicktools.cloud/",
+            "CoreApi": "https://coreapi.prod.quicktools.cloud/",
+            "AddinWeb": "https://quickslidewebapp.prod.quicktools.cloud/",
+            "AssetsProcessorFunc": "https://qtassetprocessing.azurewebsites.net/"
+          },
+          "ServiceBus": {
+            "ConnectionString": "<read_from_key_vault>",
+            "QueueName": "sb-queue-assetsapi-production-prod"
+          },
+          "BlobStorage": {
+            "ConnectionString": "<read_from_key_vault>"
+          }
+        }
+      }
+      
+kind: ConfigMap
+metadata: 
+  name: quicktools-assetsapi-config
+  namespace: quicktools-prod
